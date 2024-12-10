@@ -1,3 +1,4 @@
+import pandas as pd
 import streamlit as st
 st.set_page_config(
     page_title="TV Ratings"
@@ -147,6 +148,28 @@ def genetic_algorithm(initial_schedule, generations=GEN, population_size=POP, cr
 
     return population[0]
 
+# Prepare data for the table
+schedule_data = {
+    "Time Slot": [f"{time_slot:02d}:00" for time_slot in all_time_slots],
+    "Program": [""] * len(all_time_slots),
+    "Rating": [""] * len(all_time_slots),
+}
+
+# Fill the schedule data
+for time_slot, program in zip(all_time_slots, final_schedule):
+    schedule_data["Program"][time_slot - 6] = program  # Adjust index by the starting time (6:00)
+    schedule_data["Rating"][time_slot - 6] = ratings[program][time_slot - 6]  # Get rating for the time slot
+
+# Convert to DataFrame
+schedule_df = pd.DataFrame(schedule_data)
+
+# Display the schedule as a table in Streamlit
+st.subheader("Final Optimal Schedule with Ratings")
+st.write(schedule_df)
+
+# Display total ratings for the final schedule
+total_ratings = fitness_function(final_schedule)
+st.write("Total Ratings for the Final Schedule:", total_ratings)
 ##################################################### RESULTS ###################################################################################
 
 # brute force
