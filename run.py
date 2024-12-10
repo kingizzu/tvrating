@@ -157,8 +157,8 @@ genetic_schedule = genetic_algorithm(initial_best_schedule, generations=GEN, pop
 
 final_schedule = initial_best_schedule + genetic_schedule[:rem_t_slots]
 
-st.print("\nFinal Optimal Schedule:")
+print("\nFinal Optimal Schedule:")
 for time_slot, program in enumerate(final_schedule):
-    st.print(f"Time Slot {all_time_slots[time_slot]:02d}:00 - Program {program}")
+    print(f"Time Slot {all_time_slots[time_slot]:02d}:00 - Program {program}")
 
-st.print("Total Ratings:", fitness_function(final_schedule))
+print("Total Ratings:", fitness_function(final_schedule))
