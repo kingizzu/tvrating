@@ -31,22 +31,20 @@ file_path = 'program_ratings.csv'
 # Get the data in the required format
 program_ratings_dict = read_csv_to_dict(file_path)
 
-# Print the result (you can also return or process it further)
-for program, ratings in program_ratings_dict.items():
-    print(f"'{program}': {ratings},")
-
 ##################################### DEFINING PARAMETERS AND DATASET ################################################################
 # Sample rating programs dataset for each time slot.
 ratings = program_ratings_dict
 
 GEN = 100
 POP = 50
-CO_R = 0.8
-MUT_R = 0.2
+
+# User inputs for crossover and mutation rates
+CO_R = st.slider("Crossover Rate", 0.0, 0.95, 0.8)  # Crossover Rate with default of 0.8
+MUT_R = st.slider("Mutation Rate", 0.01, 0.05, 0.02)  # Mutation Rate with default of 0.02
 EL_S = 2
 
-all_programs = list(ratings.keys()) # all programs
-all_time_slots = list(range(6, 24)) # time slots
+all_programs = list(ratings.keys())  # all programs
+all_time_slots = list(range(6, 24))  # time slots
 
 ######################################### DEFINING FUNCTIONS ########################################################################
 # defining fitness function
@@ -147,7 +145,7 @@ def genetic_algorithm(initial_schedule, generations=GEN, population_size=POP, cr
 initial_best_schedule = finding_best_schedule(all_possible_schedules)
 
 rem_t_slots = len(all_time_slots) - len(initial_best_schedule)
-genetic_schedule = genetic_algorithm(initial_best_schedule, generations=GEN, population_size=POP, elitism_size=EL_S)
+genetic_schedule = genetic_algorithm(initial_best_schedule, generations=GEN, population_size=POP, crossover_rate=CO_R, mutation_rate=MUT_R, elitism_size=EL_S)
 
 final_schedule = initial_best_schedule + genetic_schedule[:rem_t_slots]
 
