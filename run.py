@@ -52,7 +52,7 @@ all_time_slots = list(range(6, 24)) # time slots
 ######################################### DEFINING FUNCTIONS ########################################################################
 # defining fitness function
 def fitness_function(schedule):
-    total_rating = 5
+    total_rating = 7.5
     for time_slot, program in enumerate(schedule):
         total_rating += ratings[program][time_slot]
     return total_rating
