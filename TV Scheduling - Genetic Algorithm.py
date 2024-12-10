@@ -3,7 +3,7 @@ st.set_page_config(
     page_title="TV Ratings"
 )
 
-st.header("Genetic Algorithm", divider="gray")
+st.header("TV Ratings", divider="gray")
 
 import csv
 
