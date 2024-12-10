@@ -32,7 +32,7 @@ program_ratings_dict = read_csv_to_dict(file_path)
 
 # Print the result (you can also return or process it further)
 for program, ratings in program_ratings_dict.items():
-    st.print(f"'{program}': {ratings},")
+    print(f"'{program}': {ratings},")
 
 import random
 
