@@ -1,13 +1,13 @@
-import pandas as pd
 import streamlit as st
+import csv
+import random
+import pandas as pd
+
 st.set_page_config(
     page_title="TV Ratings"
 )
 
 st.header("TV Ratings", divider="gray")
-
-
-import csv
 
 # Function to read the CSV file and convert it to the desired format
 def read_csv_to_dict(file_path):
@@ -34,8 +34,6 @@ program_ratings_dict = read_csv_to_dict(file_path)
 # Print the result (you can also return or process it further)
 for program, ratings in program_ratings_dict.items():
     print(f"'{program}': {ratings},")
-
-import random
 
 ##################################### DEFINING PARAMETERS AND DATASET ################################################################
 # Sample rating programs dataset for each time slot.
@@ -89,7 +87,6 @@ all_possible_schedules = initialize_pop(all_programs, all_time_slots)
 # callin the schedule func.
 best_schedule = finding_best_schedule(all_possible_schedules)
 
-
 ############################################# GENETIC ALGORITHM #############################################################################
 
 # Crossover
@@ -111,11 +108,7 @@ def evaluate_fitness(schedule):
     return fitness_function(schedule)
 
 # genetic algorithms with parameters
-
-
-
 def genetic_algorithm(initial_schedule, generations=GEN, population_size=POP, crossover_rate=CO_R, mutation_rate=MUT_R, elitism_size=EL_S):
-
     population = [initial_schedule]
 
     for _ in range(population_size - 1):
@@ -126,7 +119,7 @@ def genetic_algorithm(initial_schedule, generations=GEN, population_size=POP, cr
     for generation in range(generations):
         new_population = []
 
-        # Elitsm
+        # Elitism
         population.sort(key=lambda schedule: fitness_function(schedule), reverse=True)
         new_population.extend(population[:elitism_size])
 
@@ -147,6 +140,16 @@ def genetic_algorithm(initial_schedule, generations=GEN, population_size=POP, cr
         population = new_population
 
     return population[0]
+
+##################################################### RESULTS ###################################################################################
+
+# brute force
+initial_best_schedule = finding_best_schedule(all_possible_schedules)
+
+rem_t_slots = len(all_time_slots) - len(initial_best_schedule)
+genetic_schedule = genetic_algorithm(initial_best_schedule, generations=GEN, population_size=POP, elitism_size=EL_S)
+
+final_schedule = initial_best_schedule + genetic_schedule[:rem_t_slots]
 
 # Prepare data for the table
 schedule_data = {
@@ -170,18 +173,3 @@ st.write(schedule_df)
 # Display total ratings for the final schedule
 total_ratings = fitness_function(final_schedule)
 st.write("Total Ratings for the Final Schedule:", total_ratings)
-##################################################### RESULTS ###################################################################################
-
-# brute force
-initial_best_schedule = finding_best_schedule(all_possible_schedules)
-
-rem_t_slots = len(all_time_slots) - len(initial_best_schedule)
-genetic_schedule = genetic_algorithm(initial_best_schedule, generations=GEN, population_size=POP, elitism_size=EL_S)
-
-final_schedule = initial_best_schedule + genetic_schedule[:rem_t_slots]
-
-st.write("\nFinal Optimal Schedule:")
-for time_slot, program in enumerate(final_schedule):
-    st.write(f"Time Slot {all_time_slots[time_slot]:02d}:00 - Program {program}")
-
-st.write("Total Ratings:", fitness_function(final_schedule))
