@@ -132,7 +132,7 @@ CO_R = st.number_input("Crossover Rate", min_value=0.0, max_value=0.95, value=0.
 MUT_R = st.number_input("Mutation Rate", min_value=0.01, max_value=0.05, value=0.02, step=0.01)  # Allows numeric input
 
 # Execute button
-if st.button("Run Genetic Algorithm"):
+if st.button("Run"):
     # brute force
     all_possible_schedules = initialize_pop(all_programs, all_time_slots)
     initial_best_schedule = finding_best_schedule(all_possible_schedules)
