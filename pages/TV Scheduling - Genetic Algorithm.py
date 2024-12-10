@@ -1,3 +1,10 @@
+import streamlit as st
+st.set_page_config(
+    page_title="TV Ratings"
+)
+
+st.header("Genetic Algorithm", divider="gray")
+
 import csv
 
 # Function to read the CSV file and convert it to the desired format
