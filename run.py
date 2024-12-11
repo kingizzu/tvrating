@@ -4,7 +4,7 @@ import random
 import pandas as pd
 
 st.set_page_config(
-    page_title="TV Ratings"
+    page_title="TV Ratings by Raja Izzudin"
 )
 
 st.header("TV Ratings", divider="gray")
