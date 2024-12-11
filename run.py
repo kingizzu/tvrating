@@ -165,7 +165,7 @@ if st.button("Run"):
     schedule_df = pd.DataFrame(schedule_data)
 
     # Display the schedule as a table in Streamlit
-    st.subheader("Final Optimal Schedule with Ratings")
+    st.subheader("TV Ratings based on Mutation and Crossover")
     st.write(schedule_df)
 
     # Display total ratings for the final schedule
