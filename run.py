@@ -7,7 +7,7 @@ st.set_page_config(
     page_title="TV Ratings by Raja Izzudin"
 )
 
-st.header("TV Ratings", divider="gray")
+st.header("TV Ratings by Raja Izzudin", divider="gray")
 
 # Function to read the CSV file and convert it to the desired format
 def read_csv_to_dict(file_path):
