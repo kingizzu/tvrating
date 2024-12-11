@@ -32,25 +32,25 @@ file_path = 'program_ratings.csv'
 program_ratings_dict = read_csv_to_dict(file_path)
 
 ##################################### DEFINING PARAMETERS AND DATASET ################################################################
-# Sample rating programs dataset for each time slot.
+# Dataset and constants
 ratings = program_ratings_dict
 
 GEN = 100
 POP = 50
-EL_S = 2  # elitism size
+EL_S = 2  # Elitism size
 
-all_programs = list(ratings.keys())  # all programs
-all_time_slots = list(range(6, 24))  # time slots
+all_programs = list(ratings.keys())  # All programs
+all_time_slots = list(range(6, 24))  # Time slots
 
 ######################################### DEFINING FUNCTIONS ########################################################################
-# defining fitness function
+# Define fitness function
 def fitness_function(schedule):
-    total_rating = 7.5
+    total_rating = 0
     for time_slot, program in enumerate(schedule):
         total_rating += ratings[program][time_slot]
     return total_rating
 
-# initializing the population
+# Initialize the population
 def initialize_pop(programs, time_slots):
     if not programs:
         return [[]]
@@ -62,7 +62,7 @@ def initialize_pop(programs, time_slots):
 
     return all_schedules
 
-# selection
+# Selection
 def finding_best_schedule(all_schedules):
     best_schedule = []
     max_ratings = 0
@@ -75,8 +75,6 @@ def finding_best_schedule(all_schedules):
 
     return best_schedule
 
-############################################# GENETIC ALGORITHM #############################################################################
-
 # Crossover
 def crossover(schedule1, schedule2):
     crossover_point = random.randint(1, len(schedule1) - 2)
@@ -84,14 +82,14 @@ def crossover(schedule1, schedule2):
     child2 = schedule2[:crossover_point] + schedule1[crossover_point:]
     return child1, child2
 
-# mutating
+# Mutation
 def mutate(schedule):
     mutation_point = random.randint(0, len(schedule) - 1)
     new_program = random.choice(all_programs)
     schedule[mutation_point] = new_program
     return schedule
 
-# Genetic algorithms with parameters
+# Genetic Algorithm
 def genetic_algorithm(initial_schedule, generations=GEN, population_size=POP, crossover_rate=0.8, mutation_rate=0.2, elitism_size=EL_S):
     population = [initial_schedule]
 
@@ -128,15 +126,16 @@ def genetic_algorithm(initial_schedule, generations=GEN, population_size=POP, cr
 ##################################################### MAIN LOGIC ###################################################################################
 
 # User inputs for crossover and mutation rates
-CO_R = st.number_input("Crossover Rate", min_value=0.0, max_value=0.95, value=0.8, step=0.01)  # Allows numeric input
-MUT_R = st.number_input("Mutation Rate", min_value=0.01, max_value=0.05, value=0.02, step=0.01)  # Allows numeric input
+CO_R = st.number_input("Crossover Rate", min_value=0.01, max_value=1.0, value=0.8, step=0.01)  # Allows numeric input
+MUT_R = st.number_input("Mutation Rate", min_value=0.01, max_value=1.0, value=0.02, step=0.01)  # Allows numeric input
 
 # Execute button
 if st.button("Run"):
-    # brute force
+    # Initialize schedules and find the best using brute force
     all_possible_schedules = initialize_pop(all_programs, all_time_slots)
     initial_best_schedule = finding_best_schedule(all_possible_schedules)
 
+    # Calculate remaining time slots and optimize using genetic algorithm
     rem_t_slots = len(all_time_slots) - len(initial_best_schedule)
     genetic_schedule = genetic_algorithm(
         initial_best_schedule,
