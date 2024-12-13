@@ -46,19 +46,19 @@ def fitness_function(schedule):
     return total_rating
 
 # Initializing the population
+# Initializing the population
 def initialize_pop(programs, time_slots):
     if len(programs) < time_slots:
+        st.warning("Not enough programs to fill all time slots.")
         return []
-    
+
     all_schedules = []
-    for i in range(len(programs)):
-        if time_slots == 1:
-            all_schedules.append([programs[i]])
-        else:
-            for schedule in initialize_pop(programs[:i] + programs[i + 1:], time_slots - 1):
-                all_schedules.append([programs[i]] + schedule)
+    for _ in range(POP):
+        schedule = random.sample(programs, time_slots)
+        all_schedules.append(schedule)
 
     return all_schedules
+
 
 # Selection
 def finding_best_schedule(all_schedules):
@@ -77,10 +77,11 @@ def finding_best_schedule(all_schedules):
 
 # Crossover
 def crossover(schedule1, schedule2):
-    # Ensure that both schedules have more than one program
+    # Ensure schedules have at least 2 elements to perform crossover
     if len(schedule1) < 2 or len(schedule2) < 2:
-        return schedule1, schedule2  # Return unchanged if insufficient for crossover
+        return schedule1, schedule2
 
+    # Perform crossover at a valid point
     crossover_point = random.randint(1, len(schedule1) - 1)
     child1 = schedule1[:crossover_point] + schedule2[crossover_point:]
     child2 = schedule2[:crossover_point] + schedule1[crossover_point:]
