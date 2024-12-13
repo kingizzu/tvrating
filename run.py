@@ -52,8 +52,11 @@ def initialize_pop(programs, time_slots):
     
     all_schedules = []
     for i in range(len(programs)):
-        for schedule in initialize_pop(programs[:i] + programs[i + 1:], time_slots - 1):
-            all_schedules.append([programs[i]] + schedule)
+        if time_slots == 1:
+            all_schedules.append([programs[i]])
+        else:
+            for schedule in initialize_pop(programs[:i] + programs[i + 1:], time_slots - 1):
+                all_schedules.append([programs[i]] + schedule)
 
     return all_schedules
 
@@ -81,6 +84,9 @@ def crossover(schedule1, schedule2):
 
 # Mutation
 def mutate(schedule):
+    if not schedule:  # Prevent mutation on empty schedule
+        return schedule
+
     mutation_point = random.randint(0, len(schedule) - 1)
     new_program = random.choice(all_programs)
     while new_program in schedule:  # Ensure the mutated program isn't already in the schedule.
@@ -112,9 +118,9 @@ def genetic_algorithm(initial_schedule, generations=GEN, population_size=POP, cr
             else:
                 child1, child2 = parent1.copy(), parent2.copy()
 
-            if random.random() < mutation_rate:
+            if len(child1) > 0 and random.random() < mutation_rate:
                 child1 = mutate(child1)
-            if random.random() < mutation_rate:
+            if len(child2) > 0 and random.random() < mutation_rate:
                 child2 = mutate(child2)
 
             new_population.extend([child1, child2])
@@ -136,35 +142,39 @@ if st.button("Run"):
     all_possible_schedules = initialize_pop(all_programs, len(all_time_slots))
     initial_best_schedule = finding_best_schedule(all_possible_schedules)
 
-    # Run the genetic algorithm using the best initial schedule
-    genetic_schedule = genetic_algorithm(
-        initial_schedule=initial_best_schedule,
-        generations=GEN,
-        population_size=POP,
-        crossover_rate=CO_R,
-        mutation_rate=MUT_R,
-        elitism_size=EL_S
-    )
+    # Check if an initial schedule was found
+    if not initial_best_schedule:
+        st.write("No possible schedules found. Please check your input data.")
+    else:
+        # Run the genetic algorithm using the best initial schedule
+        genetic_schedule = genetic_algorithm(
+            initial_schedule=initial_best_schedule,
+            generations=GEN,
+            population_size=POP,
+            crossover_rate=CO_R,
+            mutation_rate=MUT_R,
+            elitism_size=EL_S
+        )
 
-    # Prepare data for the table
-    schedule_data = {
-        "Time Slot": [f"{time_slot:02d}:00" for time_slot in all_time_slots],
-        "Program": [""] * len(all_time_slots),
-        "Rating": [""] * len(all_time_slots),
-    }
+        # Prepare data for the table
+        schedule_data = {
+            "Time Slot": [f"{time_slot:02d}:00" for time_slot in all_time_slots],
+            "Program": [""] * len(all_time_slots),
+            "Rating": [""] * len(all_time_slots),
+        }
 
-    # Fill the schedule data
-    for time_slot, program in zip(all_time_slots, genetic_schedule):
-        schedule_data["Program"][time_slot - 6] = program  # Adjust index by the starting time (6:00)
-        schedule_data["Rating"][time_slot - 6] = ratings[program][time_slot - 6]  # Get rating for the time slot
+        # Fill the schedule data
+        for time_slot, program in zip(all_time_slots, genetic_schedule):
+            schedule_data["Program"][time_slot - 6] = program  # Adjust index by the starting time (6:00)
+            schedule_data["Rating"][time_slot - 6] = ratings[program][time_slot - 6]  # Get rating for the time slot
 
-    # Convert to DataFrame
-    schedule_df = pd.DataFrame(schedule_data)
+        # Convert to DataFrame
+        schedule_df = pd.DataFrame(schedule_data)
 
-    # Display the schedule as a table in Streamlit
-    st.subheader("TV Ratings based on Mutation and Crossover")
-    st.write(schedule_df)
+        # Display the schedule as a table in Streamlit
+        st.subheader("TV Ratings based on Mutation and Crossover")
+        st.write(schedule_df)
 
-    # Display total ratings for the final schedule
-    total_ratings = fitness_function(genetic_schedule)
-    st.write("Total Ratings for the Final Schedule:", total_ratings)
+        # Display total ratings for the final schedule
+        total_ratings = fitness_function(genetic_schedule)
+        st.write("Total Ratings for the Final Schedule:", total_ratings)
