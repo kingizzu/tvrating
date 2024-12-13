@@ -52,7 +52,7 @@ def initialize_pop(programs, time_slots):
 
     all_schedules = []
     for _ in range(POP):
-        schedule = random.sample(programs, time_slots)
+        schedule = random.sample(programs, min(time_slots, len(programs)))
         all_schedules.append(schedule)
 
     return all_schedules
@@ -68,7 +68,7 @@ def crossover(schedule1, schedule2):
     if len(schedule1) < 2 or len(schedule2) < 2:
         return schedule1, schedule2
 
-    crossover_point = random.randint(1, len(schedule1) - 1)
+    crossover_point = random.randint(1, min(len(schedule1), len(schedule2)) - 1)
     child1 = schedule1[:crossover_point] + schedule2[crossover_point:]
     child2 = schedule2[:crossover_point] + schedule1[crossover_point:]
     return child1, child2
