@@ -49,45 +49,62 @@ def fitness_function(schedule):
 def initialize_pop(programs, time_slots):
     if len(programs) < time_slots:
         return []
-
+    
     all_schedules = []
-    for _ in range(POP):
-        schedule = random.sample(programs, min(time_slots, len(programs)))
-        all_schedules.append(schedule)
+    for i in range(len(programs)):
+        if time_slots == 1:
+            all_schedules.append([programs[i]])
+        else:
+            for schedule in initialize_pop(programs[:i] + programs[i + 1:], time_slots - 1):
+                all_schedules.append([programs[i]] + schedule)
 
     return all_schedules
 
 # Selection
-def finding_best_schedule(population):
-    return max(population, key=fitness_function)
+def finding_best_schedule(all_schedules):
+    best_schedule = []
+    max_ratings = 0
+
+    for schedule in all_schedules:
+        total_ratings = fitness_function(schedule)
+        if total_ratings > max_ratings:
+            max_ratings = total_ratings
+            best_schedule = schedule
+
+    return best_schedule
 
 ############################################# GENETIC ALGORITHM #############################################################################
 
 # Crossover
 def crossover(schedule1, schedule2):
-    if len(schedule1) < 2 or len(schedule2) < 2:
-        return schedule1, schedule2
-
-    crossover_point = random.randint(1, min(len(schedule1), len(schedule2)) - 1)
+    crossover_point = random.randint(1, len(schedule1) - 1)
     child1 = schedule1[:crossover_point] + schedule2[crossover_point:]
     child2 = schedule2[:crossover_point] + schedule1[crossover_point:]
     return child1, child2
 
 # Mutation
 def mutate(schedule):
-    if not schedule:
+    if not schedule:  # Prevent mutation on empty schedule
         return schedule
 
     mutation_point = random.randint(0, len(schedule) - 1)
     new_program = random.choice(all_programs)
-    while new_program in schedule:  # Ensure the mutated program isn't already in the schedule
+    # Ensure we select a program that isn't already in the schedule.
+    while new_program in schedule:
         new_program = random.choice(all_programs)
+    
     schedule[mutation_point] = new_program
     return schedule
 
 # Genetic algorithm with parameters
-def genetic_algorithm(initial_population, generations=GEN, population_size=POP, crossover_rate=0.8, mutation_rate=0.2, elitism_size=EL_S):
-    population = initial_population
+def genetic_algorithm(initial_schedule, generations=GEN, population_size=POP, crossover_rate=0.8, mutation_rate=0.2, elitism_size=EL_S):
+    population = [initial_schedule]
+
+    # Generate the initial population through random shuffling
+    for _ in range(population_size - 1):
+        random_schedule = initial_schedule.copy()
+        random.shuffle(random_schedule)
+        population.append(random_schedule)
 
     for generation in range(generations):
         new_population = []
@@ -98,21 +115,32 @@ def genetic_algorithm(initial_population, generations=GEN, population_size=POP, 
 
         while len(new_population) < population_size:
             parent1, parent2 = random.choices(population, k=2)
+
             if random.random() < crossover_rate:
                 child1, child2 = crossover(parent1, parent2)
             else:
                 child1, child2 = parent1.copy(), parent2.copy()
 
-            if random.random() < mutation_rate:
+            if len(child1) > 0 and random.random() < mutation_rate:  # Check before mutation
                 child1 = mutate(child1)
-            if random.random() < mutation_rate:
+            if len(child2) > 0 and random.random() < mutation_rate:  # Check before mutation
                 child2 = mutate(child2)
 
-            new_population.extend([child1, child2])
+            # Ensure that the mutated children are not empty before adding to population
+            if child1 not in new_population:
+                new_population.append(child1)
+            if child2 not in new_population:
+                new_population.append(child2)
 
-        population = new_population[:population_size]  # Ensure population size is maintained
+            # Ensure that we don't surpass the population size
+            if len(new_population) >= population_size:
+                break
 
-    return finding_best_schedule(population)
+        # Trim the population to maintain size
+        population = new_population[:population_size]
+
+    # Return the best schedule from the final population
+    return max(population, key=fitness_function)
 
 ##################################################### MAIN LOGIC ###################################################################################
 
@@ -122,16 +150,17 @@ MUT_R = st.number_input("Mutation Rate", min_value=0.01, max_value=0.5, value=0.
 
 # Execute button
 if st.button("Run"):
-    # Initialize population
-    initial_population = initialize_pop(all_programs, len(all_time_slots))
+    # brute force to find the best initial schedule
+    all_possible_schedules = initialize_pop(all_programs, len(all_time_slots))
+    initial_best_schedule = finding_best_schedule(all_possible_schedules)
 
     # Check if an initial schedule was found
-    if not initial_population:
+    if not initial_best_schedule:
         st.write("No possible schedules found. Please check your input data.")
     else:
-        # Run the genetic algorithm using the initial population
-        best_schedule = genetic_algorithm(
-            initial_population=initial_population,
+        # Run the genetic algorithm using the best initial schedule
+        genetic_schedule = genetic_algorithm(
+            initial_schedule=initial_best_schedule,
             generations=GEN,
             population_size=POP,
             crossover_rate=CO_R,
@@ -147,7 +176,7 @@ if st.button("Run"):
         }
 
         # Fill the schedule data
-        for time_slot, program in zip(all_time_slots, best_schedule):
+        for time_slot, program in zip(all_time_slots, genetic_schedule):
             schedule_data["Program"][time_slot - 6] = program  # Adjust index by the starting time (6:00)
             schedule_data["Rating"][time_slot - 6] = ratings[program][time_slot - 6]  # Get rating for the time slot
 
@@ -159,5 +188,5 @@ if st.button("Run"):
         st.write(schedule_df)
 
         # Display total ratings for the final schedule
-        total_ratings = fitness_function(best_schedule)
+        total_ratings = fitness_function(genetic_schedule)
         st.write("Total Ratings for the Final Schedule:", total_ratings)
