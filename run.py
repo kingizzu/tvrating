@@ -77,6 +77,10 @@ def finding_best_schedule(all_schedules):
 
 # Crossover
 def crossover(schedule1, schedule2):
+    # Ensure that both schedules have more than one program
+    if len(schedule1) < 2 or len(schedule2) < 2:
+        return schedule1, schedule2  # Return unchanged if insufficient for crossover
+
     crossover_point = random.randint(1, len(schedule1) - 1)
     child1 = schedule1[:crossover_point] + schedule2[crossover_point:]
     child2 = schedule2[:crossover_point] + schedule1[crossover_point:]
@@ -116,7 +120,7 @@ def genetic_algorithm(initial_schedule, generations=GEN, population_size=POP, cr
         while len(new_population) < population_size:
             parent1, parent2 = random.choices(population, k=2)
 
-            if random.random() < crossover_rate:
+            if (len(parent1) > 0 and random.random() < crossover_rate) and (len(parent2) > 0):
                 child1, child2 = crossover(parent1, parent2)
             else:
                 child1, child2 = parent1.copy(), parent2.copy()
